@@ -1,0 +1,1 @@
+{"name":"roast-online","version":"1.0.0","private":true,"description":"線上烤肉計時挑戰遊戲","dependencies":{"@supabase/supabase-js":"^2.57.4"}}
