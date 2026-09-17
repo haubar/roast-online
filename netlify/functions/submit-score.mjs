@@ -1,11 +1,12 @@
 import { getStore } from '@netlify/blobs';
 
 const TARGETS = [6, 9, 12, 15];
+const ROUNDS = 3;
 const MAX = 1000;
 const BURN = 4;
 
 function calculate(results) {
-  if (!Array.isArray(results) || results.length !== 10) throw new Error('無效的遊戲資料');
+  if (!Array.isArray(results) || results.length !== ROUNDS) throw new Error('無效的遊戲資料');
   let total = 0;
   let combo = 0;
   for (const item of results) {
@@ -31,13 +32,10 @@ export default async (request) => {
     const score = calculate(body.results);
     const store = getStore('roast-leaderboard');
     const entry = { id: crypto.randomUUID(), name, score, created_at: new Date().toISOString() };
-
-    // 排行榜很小；強一致讀取後只保存 Top 10。
     const current = (await store.get('top10', { type: 'json', consistency: 'strong' })) ?? [];
     const board = [...(Array.isArray(current) ? current : []), entry]
       .sort((a, b) => b.score - a.score || new Date(a.created_at) - new Date(b.created_at))
       .slice(0, 10);
-
     await store.setJSON('top10', board);
     return Response.json({ score, ranked: board.some((x) => x.id === entry.id) });
   } catch (error) {
